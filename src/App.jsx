@@ -12,6 +12,22 @@ function App() {
 
   useEffect(() => {
     fetchTodos();
+    fetch("http://www.omdbapi.com/?s=dune&apikey=960ffa73")
+      .then((res) => res.json())
+      .then((data) => console.log(data));
+
+    /*
+
+    Send all data requests to:
+http://www.omdbapi.com/?apikey=[yourkey]&
+
+Here is your key: 960ffa73
+
+Please append it to all of your API requests,
+
+OMDb API: http://www.omdbapi.com/?i=tt3896198&apikey=960ffa73
+
+*/
   }, []);
 
   const fetchTodos = async () => {
@@ -91,47 +107,74 @@ function App() {
           </p>
           <div class="mt-5 sm:flex md:mt-8">
             <div class="rounded-md shadow">
-              <input
-                type="Text"
-                placeholder="new Todo.."
-                onChange={(e) => setNewTodo(e.target.value)}
-                value={newTodo}
-              ></input>
-              <button onClick={addTodo}>add Todo item</button>
-              {/*<a
-                href=""
-                class="flex items-center justify-center w-full px-8 py-3 text-base font-medium leading-6 text-white transition duration-150 ease-in-out bg-blue-500 border border-transparent rounded-md hover:bg-blue-600 focus:outline-none focus:shadow-outline-blue md:py-4 md:text-lg md:px-10"
-              >
-                Getting started
-              </a>*/}
+              <div class="bg-white p-4 rounded-lg">
+                <div class="relative bg-inherit">
+                  <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    class="peer bg-transparent h-10 w-72 rounded-lg text-gray-800 placeholder-transparent ring-2 px-2 ring-gray-500 focus:ring-sky-600 focus:outline-none focus:border-rose-600"
+                    onChange={(e) => setNewTodo(e.target.value)}
+                    value={newTodo}
+                  />
+                  <label
+                    for="username"
+                    class="absolute cursor-text left-0 -top-3 text-sm text-gray-500 bg-inherit mx-1 px-1 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-500 peer-placeholder-shown:top-2 peer-focus:-top-3 peer-focus:text-sky-600 peer-focus:text-sm transition-all"
+                  >
+                    search for a movie
+                  </label>
+                </div>
+              </div>
+              {/*
+              <a href="#" class="relative">
+                <span class="absolute top-0 left-0 mt-1 ml-1 h-full w-full rounded bg-gray-700"></span>
+                <span
+                  onClick={addTodo}
+                  class="fold-bold relative inline-block h-full w-full rounded border-2 border-black bg-black px-3 py-1 text-base font-bold text-white transition duration-100 hover:bg-gray-900 hover:text-yellow-500"
+                >
+                  add Item
+                </span>
+              </a>
+
+              
+
+
+            
+
+*/}
             </div>
-            <div class="mt-3 rounded-md shadow sm:mt-0 sm:ml-3">
-              {/*<a
-                href=""
-                class="flex items-center justify-center w-full px-8 py-3 text-base font-medium leading-6 text-blue-500 transition duration-150 ease-in-out bg-white border border-transparent rounded-md hover:text-blue-600 focus:outline-none focus:shadow-outline-blue md:py-4 md:text-lg md:px-10"
-              >
-                Contribute
-              </a>*/}
-            </div>
+            <div class="mt-3 rounded-md shadow sm:mt-0 sm:ml-3"></div>
           </div>
-          <ul>
+
+          <ul class="bg-white rounded-lg shadow divide-y divide-gray-200 max-w-sm">
             {todoList.map((todo) => (
-              <li key={todo.id}>
-                <p>{todo.name}</p>
+              <li key={todo.id} class="px-6 py-4">
+                <div class="flex justify-between">
+                  <span class="font-semibold text-lg">List Item {todo.id}</span>
+                  <span class="text-gray-500 text-xs">1 day ago</span>
+                </div>
+                <p class="text-gray-700">{todo.name}</p>
 
-                <button
-                  className="bg-amber-400"
-                  onClick={() => pipa(todo.id, todo.isCompleted)}
-                >
-                  {todo.isCompleted ? "undo" : "complete Tasks"}
-                </button>
-
-                <button
-                  onClick={() => deleteTodo(todo.id)}
-                  className="bg-blue-400"
-                >
-                  delete
-                </button>
+                <div class="flex flex-wrap justify-center gap-6">
+                  <a class="relative" href="#">
+                    <span class="absolute top-0 left-0 mt-1 ml-1 h-full w-full rounded bg-black"></span>
+                    <span
+                      onClick={() => pipa(todo.id, todo.isCompleted)}
+                      class="fold-bold relative inline-block h-full w-full rounded border-2 border-black bg-white px-3 py-1 text-base font-bold text-black transition duration-100 hover:bg-yellow-400 hover:text-gray-900"
+                    >
+                      {todo.isCompleted ? "undo" : "complete"}
+                    </span>
+                  </a>
+                  <a href="#" class="relative">
+                    <span class="absolute top-0 left-0 mt-1 ml-1 h-full w-full rounded bg-gray-700"></span>
+                    <span
+                      onClick={() => deleteTodo(todo.id)}
+                      class="fold-bold relative inline-block h-full w-full rounded border-2 border-black bg-black px-3 py-1 text-base font-bold text-white transition duration-100 hover:bg-gray-900 hover:text-yellow-500"
+                    >
+                      delete
+                    </span>
+                  </a>
+                </div>
               </li>
             ))}
           </ul>
