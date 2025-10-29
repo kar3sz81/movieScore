@@ -147,6 +147,51 @@ OMDb API: http://www.omdbapi.com/?i=tt3896198&apikey=960ffa73
           </div>
 
           <ul class="bg-white rounded-lg shadow divide-y divide-gray-200 max-w-sm">
+            {data.map((adat) => (
+              <li key={adat.id} class="px-6 py-4">
+                <div class="flex justify-between">
+                  <span class="font-semibold text-lg">List Item {adat.id}</span>
+                  <span class="text-gray-500 text-xs">1 day ago</span>
+                </div>
+                <p class="text-gray-700">{adat.name}</p>
+{/*
+                <div class="flex flex-wrap justify-center gap-6">
+                  <a class="relative" href="#">
+                    <span class="absolute top-0 left-0 mt-1 ml-1 h-full w-full rounded bg-black"></span>
+                    <span
+                      onClick={() => pipa(adat.id)}
+                      class="fold-bold relative inline-block h-full w-full rounded border-2 border-black bg-white px-3 py-1 text-base font-bold text-black transition duration-100 hover:bg-yellow-400 hover:text-gray-900"
+                    >
+                      {adat.isCompleted ? "undo" : "complete"}
+                    </span>
+                  </a>
+                  <a href="#" class="relative">
+                    <span class="absolute top-0 left-0 mt-1 ml-1 h-full w-full rounded bg-gray-700"></span>
+                    <span
+                      onClick={() => deleteTodo(adat.id)}
+                      class="fold-bold relative inline-block h-full w-full rounded border-2 border-black bg-black px-3 py-1 text-base font-bold text-white transition duration-100 hover:bg-gray-900 hover:text-yellow-500"
+                    >
+                      delete
+                    </span>
+                  </a>
+                </div>*/}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+      
+      
+      {/*}
+      <div class="flex items-center py-5 md:w-1/2 md:pb-20 md:pt-10 md:pl-10">
+        <div class="relative w-full p-3 rounded  md:p-8">
+          <div class="rounded-lg bg-white text-black w-full">
+            <img src="https://picsum.photos/400/300" />
+          </div>
+        </div>
+      </div>*/}
+      
+        <ul class="bg-white rounded-lg shadow divide-y divide-gray-200 max-w-sm">
             {todoList.map((todo) => (
               <li key={todo.id} class="px-6 py-4">
                 <div class="flex justify-between">
@@ -178,15 +223,6 @@ OMDb API: http://www.omdbapi.com/?i=tt3896198&apikey=960ffa73
               </li>
             ))}
           </ul>
-        </div>
-      </div>
-      <div class="flex items-center py-5 md:w-1/2 md:pb-20 md:pt-10 md:pl-10">
-        <div class="relative w-full p-3 rounded  md:p-8">
-          <div class="rounded-lg bg-white text-black w-full">
-            <img src="https://picsum.photos/400/300" />
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
