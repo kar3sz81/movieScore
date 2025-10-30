@@ -9,25 +9,19 @@ import { useEffect } from "react";
 function App() {
   const [todoList, setTodoList] = useState([]);
   const [newTodo, setNewTodo] = useState("");
+  const [movies, setMovies] = useState([]);
+  const [searchWord, setSearchWord] = useState("");
+  var datas = [];
+  let word = "dune";
 
   useEffect(() => {
     fetchTodos();
-    fetch("http://www.omdbapi.com/?s=dune&apikey=960ffa73")
+    fetch(`http://www.omdbapi.com/?s=${word}&apikey=960ffa73`)
       .then((res) => res.json())
-      .then((data) => console.log(data));
-
-    /*
-
-    Send all data requests to:
-http://www.omdbapi.com/?apikey=[yourkey]&
-
-Here is your key: 960ffa73
-
-Please append it to all of your API requests,
-
-OMDb API: http://www.omdbapi.com/?i=tt3896198&apikey=960ffa73
-
-*/
+      .then((data) => {
+        console.log(data.Search);
+        setMovies(data.Search);
+      });
   }, []);
 
   const fetchTodos = async () => {
@@ -95,8 +89,8 @@ OMDb API: http://www.omdbapi.com/?i=tt3896198&apikey=960ffa73
       <div class="flex items-center py-5 md:w-1/2 md:pb-20 md:pt-10 md:pr-10">
         <div class="text-left">
           <h2 class="text-4xl font-extrabold leading-10 tracking-tight text-gray-800 sm:text-5xl sm:leading-none md:text-6xl">
-            Hero
-            <span class="font-bold text-blue-500">Section</span>
+            Movie
+            <span class="font-bold text-blue-500">Score</span>
             <span class="text-xl font-semibold rounded-full text-blueGray-500">
               2.0
             </span>
@@ -114,8 +108,8 @@ OMDb API: http://www.omdbapi.com/?i=tt3896198&apikey=960ffa73
                     id="username"
                     name="username"
                     class="peer bg-transparent h-10 w-72 rounded-lg text-gray-800 placeholder-transparent ring-2 px-2 ring-gray-500 focus:ring-sky-600 focus:outline-none focus:border-rose-600"
-                    onChange={(e) => setNewTodo(e.target.value)}
-                    value={newTodo}
+                    onChange={(e) => setSearchWord(e.target.value)}
+                    value={searchWord}
                   />
                   <label
                     for="username"
@@ -125,104 +119,72 @@ OMDb API: http://www.omdbapi.com/?i=tt3896198&apikey=960ffa73
                   </label>
                 </div>
               </div>
-              {/*
-              <a href="#" class="relative">
-                <span class="absolute top-0 left-0 mt-1 ml-1 h-full w-full rounded bg-gray-700"></span>
-                <span
-                  onClick={addTodo}
-                  class="fold-bold relative inline-block h-full w-full rounded border-2 border-black bg-black px-3 py-1 text-base font-bold text-white transition duration-100 hover:bg-gray-900 hover:text-yellow-500"
-                >
-                  add Item
-                </span>
-              </a>
-
-              
-
-
-            
-
-*/}
             </div>
             <div class="mt-3 rounded-md shadow sm:mt-0 sm:ml-3"></div>
           </div>
 
           <ul class="bg-white rounded-lg shadow divide-y divide-gray-200 max-w-sm">
-            {data.map((adat) => (
-              <li key={adat.id} class="px-6 py-4">
+            {movies.map((movie) => (
+              <li key={movie.imdbID} class="px-6 py-4">
                 <div class="flex justify-between">
-                  <span class="font-semibold text-lg">List Item {adat.id}</span>
-                  <span class="text-gray-500 text-xs">1 day ago</span>
+                  <span class="font-semibold text-lg">{movie.Title}</span>
+                  <span class="text-gray-500 text-xs">{movie.Year}</span>
                 </div>
-                <p class="text-gray-700">{adat.name}</p>
-{/*
-                <div class="flex flex-wrap justify-center gap-6">
-                  <a class="relative" href="#">
-                    <span class="absolute top-0 left-0 mt-1 ml-1 h-full w-full rounded bg-black"></span>
-                    <span
-                      onClick={() => pipa(adat.id)}
-                      class="fold-bold relative inline-block h-full w-full rounded border-2 border-black bg-white px-3 py-1 text-base font-bold text-black transition duration-100 hover:bg-yellow-400 hover:text-gray-900"
-                    >
-                      {adat.isCompleted ? "undo" : "complete"}
-                    </span>
-                  </a>
-                  <a href="#" class="relative">
-                    <span class="absolute top-0 left-0 mt-1 ml-1 h-full w-full rounded bg-gray-700"></span>
-                    <span
-                      onClick={() => deleteTodo(adat.id)}
-                      class="fold-bold relative inline-block h-full w-full rounded border-2 border-black bg-black px-3 py-1 text-base font-bold text-white transition duration-100 hover:bg-gray-900 hover:text-yellow-500"
-                    >
-                      delete
-                    </span>
-                  </a>
-                </div>*/}
+                <img src={movie.Poster} />
+                {/*
+                <article class="relative isolate flex flex-col justify-end overflow-hidden rounded-2xl px-8 pb-8 pt-40 max-w-sm mx-auto mt-24">
+                  <img
+                    src={movie.Poster}
+                    alt={movie.Title}
+                    class="absolute inset-0 h-full w-full object-cover"
+                  />
+                  <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40"></div>
+                  <h3 class="z-10 mt-3 text-3xl font-bold text-white">
+                    {movie.Title}
+                  </h3>
+                  <div class="z-10 gap-y-1 overflow-hidden text-sm leading-6 text-gray-300">
+                    {movie.Year}
+                  </div>
+                </article>*/}
+                {/*<p class="text-gray-700">{movie.Year}</p>*/}
               </li>
             ))}
           </ul>
         </div>
       </div>
-      
-      
-      {/*}
-      <div class="flex items-center py-5 md:w-1/2 md:pb-20 md:pt-10 md:pl-10">
-        <div class="relative w-full p-3 rounded  md:p-8">
-          <div class="rounded-lg bg-white text-black w-full">
-            <img src="https://picsum.photos/400/300" />
-          </div>
-        </div>
-      </div>*/}
-      
-        <ul class="bg-white rounded-lg shadow divide-y divide-gray-200 max-w-sm">
-            {todoList.map((todo) => (
-              <li key={todo.id} class="px-6 py-4">
-                <div class="flex justify-between">
-                  <span class="font-semibold text-lg">List Item {todo.id}</span>
-                  <span class="text-gray-500 text-xs">1 day ago</span>
-                </div>
-                <p class="text-gray-700">{todo.name}</p>
 
-                <div class="flex flex-wrap justify-center gap-6">
-                  <a class="relative" href="#">
-                    <span class="absolute top-0 left-0 mt-1 ml-1 h-full w-full rounded bg-black"></span>
-                    <span
-                      onClick={() => pipa(todo.id, todo.isCompleted)}
-                      class="fold-bold relative inline-block h-full w-full rounded border-2 border-black bg-white px-3 py-1 text-base font-bold text-black transition duration-100 hover:bg-yellow-400 hover:text-gray-900"
-                    >
-                      {todo.isCompleted ? "undo" : "complete"}
-                    </span>
-                  </a>
-                  <a href="#" class="relative">
-                    <span class="absolute top-0 left-0 mt-1 ml-1 h-full w-full rounded bg-gray-700"></span>
-                    <span
-                      onClick={() => deleteTodo(todo.id)}
-                      class="fold-bold relative inline-block h-full w-full rounded border-2 border-black bg-black px-3 py-1 text-base font-bold text-white transition duration-100 hover:bg-gray-900 hover:text-yellow-500"
-                    >
-                      delete
-                    </span>
-                  </a>
-                </div>
-              </li>
-            ))}
-          </ul>
+      <ul class="bg-white rounded-lg shadow divide-y divide-gray-200 max-w-sm">
+        {todoList.map((todo) => (
+          <li key={todo.id} class="px-6 py-4">
+            <div class="flex justify-between">
+              <span class="font-semibold text-lg">List Item {todo.id}</span>
+              <span class="text-gray-500 text-xs">1 day ago</span>
+            </div>
+            <p class="text-gray-700">{todo.name}</p>
+
+            <div class="flex flex-wrap justify-center gap-6">
+              <a class="relative" href="#">
+                <span class="absolute top-0 left-0 mt-1 ml-1 h-full w-full rounded bg-black"></span>
+                <span
+                  onClick={() => pipa(todo.id, todo.isCompleted)}
+                  class="fold-bold relative inline-block h-full w-full rounded border-2 border-black bg-white px-3 py-1 text-base font-bold text-black transition duration-100 hover:bg-yellow-400 hover:text-gray-900"
+                >
+                  {todo.isCompleted ? "undo" : "complete"}
+                </span>
+              </a>
+              <a href="#" class="relative">
+                <span class="absolute top-0 left-0 mt-1 ml-1 h-full w-full rounded bg-gray-700"></span>
+                <span
+                  onClick={() => deleteTodo(todo.id)}
+                  class="fold-bold relative inline-block h-full w-full rounded border-2 border-black bg-black px-3 py-1 text-base font-bold text-white transition duration-100 hover:bg-gray-900 hover:text-yellow-500"
+                >
+                  delete
+                </span>
+              </a>
+            </div>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
