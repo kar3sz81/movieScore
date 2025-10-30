@@ -10,20 +10,22 @@ function App() {
   const [todoList, setTodoList] = useState([]);
   const [newTodo, setNewTodo] = useState("");
   const [movies, setMovies] = useState([]);
-  const [searchWord, setSearchWord] = useState("");
+  const [searchWord, setSearchWord] = useState("dune");
   var datas = [];
   let word = "dune";
 
   useEffect(() => {
-    fetchTodos();
-    fetch(`http://www.omdbapi.com/?s=${word}&apikey=960ffa73`)
+    
+    fetch(`http://www.omdbapi.com/?s=${searchWord}&apikey=960ffa73`)
       .then((res) => res.json())
       .then((data) => {
         console.log(data.Search);
         setMovies(data.Search);
       });
-  }, []);
+  }, [searchWord]);
 
+useEffect(() => {
+  fetchTodos();
   const fetchTodos = async () => {
     const { data, error } = await supabase.from("todoList").select("*");
     if (error) {
@@ -32,7 +34,8 @@ function App() {
       setTodoList(data);
     }
   };
-
+  }, []);
+  
   const addTodo = async () => {
     const newTodoData = {
       name: newTodo,
