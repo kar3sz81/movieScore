@@ -10,19 +10,17 @@ function App() {
   const [todoList, setTodoList] = useState([]);
   const [newTodo, setNewTodo] = useState("");
   const [movies, setMovies] = useState([]);
-  const [searchWord, setSearchWord] = useState("");
-  var datas = [];
-  let word = "dune";
+  const [searchWord, setSearchWord] = useState("dune");
 
   useEffect(() => {
     fetchTodos();
-    fetch(`http://www.omdbapi.com/?s=${word}&apikey=960ffa73`)
+    fetch(`http://www.omdbapi.com/?s=${searchWord}&apikey=960ffa73`)
       .then((res) => res.json())
       .then((data) => {
         console.log(data.Search);
         setMovies(data.Search);
       });
-  }, []);
+  }, [searchWord]);
 
   const fetchTodos = async () => {
     const { data, error } = await supabase.from("todoList").select("*");
@@ -85,14 +83,14 @@ function App() {
   };
 
   return (
-    <div class="relative flex flex-col items-center max-w-screen-xl px-4 mx-auto md:flex-row sm:px-6 p-8">
+    <div class="relative flex flex-col items-start max-w-screen-xl px-4 mx-auto md:flex-row sm:px-6 p-8">
       <div class="flex items-center py-5 md:w-1/2 md:pb-20 md:pt-10 md:pr-10">
         <div class="text-left">
           <h2 class="text-4xl font-extrabold leading-10 tracking-tight text-gray-800 sm:text-5xl sm:leading-none md:text-6xl">
             Movie
             <span class="font-bold text-blue-500">Score</span>
-            <span class="text-xl font-semibold rounded-full text-blueGray-500">
-              2.0
+            <span class="text-xs font-semibold rounded-full text-blueGray-500">
+              by kar3sz
             </span>
           </h2>
           <p class="max-w-md mx-auto mt-3 text-base text-gray-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
@@ -123,37 +121,23 @@ function App() {
             <div class="mt-3 rounded-md shadow sm:mt-0 sm:ml-3"></div>
           </div>
 
-          <ul class="bg-white rounded-lg shadow divide-y divide-gray-200 max-w-sm">
-            {movies.map((movie) => (
-              <li key={movie.imdbID} class="px-6 py-4">
-                <div class="flex justify-between">
-                  <span class="font-semibold text-lg">{movie.Title}</span>
-                  <span class="text-gray-500 text-xs">{movie.Year}</span>
-                </div>
-                <img src={movie.Poster} />
-                {/*
-                <article class="relative isolate flex flex-col justify-end overflow-hidden rounded-2xl px-8 pb-8 pt-40 max-w-sm mx-auto mt-24">
-                  <img
-                    src={movie.Poster}
-                    alt={movie.Title}
-                    class="absolute inset-0 h-full w-full object-cover"
-                  />
-                  <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40"></div>
-                  <h3 class="z-10 mt-3 text-3xl font-bold text-white">
-                    {movie.Title}
-                  </h3>
-                  <div class="z-10 gap-y-1 overflow-hidden text-sm leading-6 text-gray-300">
-                    {movie.Year}
+          {movies && (
+            <ul class="bg-white rounded-lg shadow divide-y divide-gray-200 max-w-sm">
+              {movies.map((movie) => (
+                <li key={movie.imdbID} class="px-6 py-4">
+                  <div class="flex justify-between">
+                    <span class="font-semibold text-lg">{movie.Title}</span>
+                    <span class="text-gray-500 text-xs">{movie.Year}</span>
                   </div>
-                </article>*/}
-                {/*<p class="text-gray-700">{movie.Year}</p>*/}
-              </li>
-            ))}
-          </ul>
+                  <img src={movie.Poster} />
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
 
-      <ul class="bg-white rounded-lg shadow divide-y divide-gray-200 max-w-sm">
+      <ul class="bg-white rounded-lg shadow divide-y divide-gray-200 max-w-sm mt-16">
         {todoList.map((todo) => (
           <li key={todo.id} class="px-6 py-4">
             <div class="flex justify-between">
