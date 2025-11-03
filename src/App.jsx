@@ -13,6 +13,13 @@ function App() {
   const [searchWord, setSearchWord] = useState("dune");
   const [movieProfileSelected, setMovieProfileSelected] = useState(false);
   const [selectedMovie, setSelectedMovie] = useState(null);
+  const user = Math.round(Math.random() * 1000).toString();
+  const avatarURL = "https://i.pravatar.cc/48";
+  const full = false;
+  const [rating, setRating] = useState(0);
+  const [tempRating, setTempRating] = useState(0);
+
+  console.log(rating);
 
   useEffect(() => {
     fetchTodos();
@@ -94,28 +101,88 @@ function App() {
     }
   };
 
+  {
+    /*return */
+  }
+  {
+    /*return */
+  }
+  {
+    /*return */
+  }
+  {
+    /*return */
+  }
+  {
+    /*return */
+  }
+  {
+    /*return */
+  }
+  {
+    /*return */
+  }
+  {
+    /*return */
+  }
+
   return (
     <div class="relative flex flex-col items-start max-w-screen-xl px-4 mx-auto md:flex-row sm:px-6 p-8">
-      <div>Log in as kar3sz</div>
-      <div class="px-33"> Log in as Bence</div>
-      <div>Everything blurry until you choose</div>
-
       <div class="flex items-center py-5 md:w-1/2 md:pb-20 md:pt-10 md:pr-10">
         <div class="text-left">
-          <h2 class="text-4xl font-extrabold leading-10 tracking-tight text-gray-800 sm:text-5xl sm:leading-none md:text-6xl">
-            Movie
-            <span class="font-bold text-blue-500">Score</span>
-            <span class="text-xs font-semibold rounded-full text-blueGray-500">
-              by kar3sz
-            </span>
-          </h2>
           <p class="max-w-md mx-auto mt-3 text-base text-gray-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam
-            vulputate dignissim augue, Nullam vulputate dignissim augue.
+            <div class="bg-white p-8 rounded-2xl w-full max-w-sm ">
+              {/*LOG IN part */}
+              {/*LOG IN part */}
+              {/*LOG IN part */}
+              {/*LOG IN part */}
+              {/*LOG IN part */}
+              {/*LOG IN part */}
+
+              <div class="flex-col items-center">
+                <div class="flex items-center">
+                  <img
+                    src={avatarURL}
+                    alt="Profile Picture"
+                    class="w-8 h-8 rounded-full mt-4"
+                  />
+                  <div class="m-2">
+                    <h2 class="text-sm font-semibold mt-2">Hi, guest{user}!</h2>
+                    <p class="text-gray-500 text-xs">Long time not see..</p>
+                  </div>
+                </div>
+              </div>
+
+              {/*MAin title: MOVIE SCORE */}
+              {/*MAin title: MOVIE SCORE */}
+              {/*MAin title: MOVIE SCORE */}
+              {/*MAin title: MOVIE SCORE */}
+              {/*MAin title: MOVIE SCORE */}
+              {/*MAin title: MOVIE SCORE */}
+              {/*MAin title: MOVIE SCORE */}
+              {/*MAin title: MOVIE SCORE */}
+
+              <h2 class="text-5xl font-extrabold leading-10 tracking-tight text-gray-800 sm:text-5xl sm:leading-none md:text-5xl">
+                Movie
+                <span class="font-bold text-blue-500">Score</span>
+                {/*<span class="text-xs font-semibold rounded-full text-blueGray-500">
+                    by kar3sz
+                  </span>*/}
+              </h2>
+            </div>
           </p>
-          <div class="mt-5 sm:flex md:mt-8">
-            <div class="rounded-md shadow">
-              <div class="bg-white p-4 rounded-lg">
+
+          {/*search */}
+          {/*search */}
+          {/*search */}
+          {/*search */}
+          {/*search */}
+          {/*search */}
+          {/*search */}
+
+          <div class="mx-7 sm:flex md:mt-8">
+            <div class="rounded-md ">
+              <div class="bg-white  rounded-lg">
                 <div class="relative bg-inherit">
                   <input
                     type="text"
@@ -137,6 +204,15 @@ function App() {
             <div class="mt-3 rounded-md shadow sm:mt-0 sm:ml-3"></div>
           </div>
 
+          {/* search result MOVIE-CARD*/}
+          {/* search result MOVIE-CARD*/}
+          {/* search result MOVIE-CARD*/}
+          {/* search result MOVIE-CARD*/}
+          {/* search result MOVIE-CARD*/}
+          {/* search result MOVIE-CARD*/}
+          {/* search result MOVIE-CARD*/}
+          {/* search result MOVIE-CARD*/}
+
           {movies && (
             <ul class="bg-white rounded-lg shadow divide-y divide-gray-200 max-w-sm">
               {movies.map((movie) => (
@@ -157,38 +233,52 @@ function App() {
                   {/*      START stars        */}
                   {/*      START stars        */}
 
-                  <div class="flex justify-center items-center bg-white p-8 mr-9 shadow-lg shadow-slate-200 rounded-lg w-auto space-x-1 lg:space-x-2">
-                    <button>
+                  <div class="flex justify-center items-center bg-white p-8 mr-9 shadow-slate-200 rounded-lg w-auto space-x-1 lg:space-x-2">
+                    <button onClick={() => setRating(1)}>
+                      <svg
+                        class="text-yellow-500 w-5 h-auto fill-current hover:bg-sky-700"
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 576 512"
+                      >
+                        {rating >= 1 || tempRating >= 1 ? (
+                          <path d="M381.2 150.3L524.9 171.5C536.8 173.2 546.8 181.6 550.6 193.1C554.4 204.7 551.3 217.3 542.7 225.9L438.5 328.1L463.1 474.7C465.1 486.7 460.2 498.9 450.2 506C440.3 513.1 427.2 514 416.5 508.3L288.1 439.8L159.8 508.3C149 514 135.9 513.1 126 506C116.1 498.9 111.1 486.7 113.2 474.7L137.8 328.1L33.58 225.9C24.97 217.3 21.91 204.7 25.69 193.1C29.46 181.6 39.43 173.2 51.42 171.5L195 150.3L259.4 17.97C264.7 6.954 275.9-.0391 288.1-.0391C300.4-.0391 311.6 6.954 316.9 17.97L381.2 150.3z" />
+                        ) : (
+                          <path d=" M287.9 0C297.1 0 305.5 5.25 309.5 13.52L378.1 154.8L531.4 177.5C540.4 178.8 547.8 185.1 550.7 193.7C553.5 202.4 551.2 211.9 544.8 218.2L433.6 328.4L459.9 483.9C461.4 492.9 457.7 502.1 450.2 507.4C442.8 512.7 432.1 513.4 424.9 509.1L287.9 435.9L150.1 509.1C142.9 513.4 133.1 512.7 125.6 507.4C118.2 502.1 114.5 492.9 115.1 483.9L142.2 328.4L31.11 218.2C24.65 211.9 22.36 202.4 25.2 193.7C28.03 185.1 35.5 178.8 44.49 177.5L197.7 154.8L266.3 13.52C270.4 5.249 278.7 0 287.9 0L287.9 0zM287.9 78.95L235.4 187.2C231.9 194.3 225.1 199.3 217.3 200.5L98.98 217.9L184.9 303C190.4 308.5 192.9 316.4 191.6 324.1L171.4 443.7L276.6 387.5C283.7 383.7 292.2 383.7 299.2 387.5L404.4 443.7L384.2 324.1C382.9 316.4 385.5 308.5 391 303L476.9 217.9L358.6 200.5C350.7 199.3 343.9 194.3 340.5 187.2L287.9 78.95z" />
+                        )}
+                      </svg>
+                    </button>
+
+                    <button
+                      onClick={() => setRating(2)}
+                      onMouseEnter={() => setTempRating(2)}
+                      onMouseLeave={() => setTempRating(0)}
+                    >
                       <svg
                         class="text-yellow-500 w-5 h-auto fill-current"
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 576 512"
                       >
-                        <path d="M381.2 150.3L524.9 171.5C536.8 173.2 546.8 181.6 550.6 193.1C554.4 204.7 551.3 217.3 542.7 225.9L438.5 328.1L463.1 474.7C465.1 486.7 460.2 498.9 450.2 506C440.3 513.1 427.2 514 416.5 508.3L288.1 439.8L159.8 508.3C149 514 135.9 513.1 126 506C116.1 498.9 111.1 486.7 113.2 474.7L137.8 328.1L33.58 225.9C24.97 217.3 21.91 204.7 25.69 193.1C29.46 181.6 39.43 173.2 51.42 171.5L195 150.3L259.4 17.97C264.7 6.954 275.9-.0391 288.1-.0391C300.4-.0391 311.6 6.954 316.9 17.97L381.2 150.3z" />
+                        {rating >= 2 || tempRating >= 2 ? (
+                          <path d="M381.2 150.3L524.9 171.5C536.8 173.2 546.8 181.6 550.6 193.1C554.4 204.7 551.3 217.3 542.7 225.9L438.5 328.1L463.1 474.7C465.1 486.7 460.2 498.9 450.2 506C440.3 513.1 427.2 514 416.5 508.3L288.1 439.8L159.8 508.3C149 514 135.9 513.1 126 506C116.1 498.9 111.1 486.7 113.2 474.7L137.8 328.1L33.58 225.9C24.97 217.3 21.91 204.7 25.69 193.1C29.46 181.6 39.43 173.2 51.42 171.5L195 150.3L259.4 17.97C264.7 6.954 275.9-.0391 288.1-.0391C300.4-.0391 311.6 6.954 316.9 17.97L381.2 150.3z" />
+                        ) : (
+                          <path d=" M287.9 0C297.1 0 305.5 5.25 309.5 13.52L378.1 154.8L531.4 177.5C540.4 178.8 547.8 185.1 550.7 193.7C553.5 202.4 551.2 211.9 544.8 218.2L433.6 328.4L459.9 483.9C461.4 492.9 457.7 502.1 450.2 507.4C442.8 512.7 432.1 513.4 424.9 509.1L287.9 435.9L150.1 509.1C142.9 513.4 133.1 512.7 125.6 507.4C118.2 502.1 114.5 492.9 115.1 483.9L142.2 328.4L31.11 218.2C24.65 211.9 22.36 202.4 25.2 193.7C28.03 185.1 35.5 178.8 44.49 177.5L197.7 154.8L266.3 13.52C270.4 5.249 278.7 0 287.9 0L287.9 0zM287.9 78.95L235.4 187.2C231.9 194.3 225.1 199.3 217.3 200.5L98.98 217.9L184.9 303C190.4 308.5 192.9 316.4 191.6 324.1L171.4 443.7L276.6 387.5C283.7 383.7 292.2 383.7 299.2 387.5L404.4 443.7L384.2 324.1C382.9 316.4 385.5 308.5 391 303L476.9 217.9L358.6 200.5C350.7 199.3 343.9 194.3 340.5 187.2L287.9 78.95z" />
+                        )}
                       </svg>
                     </button>
 
-                    <button>
+                    <button onClick={() => setRating(3)}>
                       <svg
                         class="text-yellow-500 w-5 h-auto fill-current"
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 576 512"
                       >
-                        <path d="M381.2 150.3L524.9 171.5C536.8 173.2 546.8 181.6 550.6 193.1C554.4 204.7 551.3 217.3 542.7 225.9L438.5 328.1L463.1 474.7C465.1 486.7 460.2 498.9 450.2 506C440.3 513.1 427.2 514 416.5 508.3L288.1 439.8L159.8 508.3C149 514 135.9 513.1 126 506C116.1 498.9 111.1 486.7 113.2 474.7L137.8 328.1L33.58 225.9C24.97 217.3 21.91 204.7 25.69 193.1C29.46 181.6 39.43 173.2 51.42 171.5L195 150.3L259.4 17.97C264.7 6.954 275.9-.0391 288.1-.0391C300.4-.0391 311.6 6.954 316.9 17.97L381.2 150.3z" />
+                        {/*  <path d="M381.2 150.3L524.9 171.5C536.8 173.2 546.8 181.6 550.6 193.1C554.4 204.7 551.3 217.3 542.7 225.9L438.5 328.1L463.1 474.7C465.1 486.7 460.2 498.9 450.2 506C440.3 513.1 427.2 514 416.5 508.3L288.1 439.8L159.8 508.3C149 514 135.9 513.1 126 506C116.1 498.9 111.1 486.7 113.2 474.7L137.8 328.1L33.58 225.9C24.97 217.3 21.91 204.7 25.69 193.1C29.46 181.6 39.43 173.2 51.42 171.5L195 150.3L259.4 17.97C264.7 6.954 275.9-.0391 288.1-.0391C300.4-.0391 311.6 6.954 316.9 17.97L381.2 150.3z" />
+                         */}
+                        <path d="M287.9 0C297.1 0 305.5 5.25 309.5 13.52L378.1 154.8L531.4 177.5C540.4 178.8 547.8 185.1 550.7 193.7C553.5 202.4 551.2 211.9 544.8 218.2L433.6 328.4L459.9 483.9C461.4 492.9 457.7 502.1 450.2 507.4C442.8 512.7 432.1 513.4 424.9 509.1L287.9 435.9L150.1 509.1C142.9 513.4 133.1 512.7 125.6 507.4C118.2 502.1 114.5 492.9 115.1 483.9L142.2 328.4L31.11 218.2C24.65 211.9 22.36 202.4 25.2 193.7C28.03 185.1 35.5 178.8 44.49 177.5L197.7 154.8L266.3 13.52C270.4 5.249 278.7 0 287.9 0L287.9 0zM287.9 78.95L235.4 187.2C231.9 194.3 225.1 199.3 217.3 200.5L98.98 217.9L184.9 303C190.4 308.5 192.9 316.4 191.6 324.1L171.4 443.7L276.6 387.5C283.7 383.7 292.2 383.7 299.2 387.5L404.4 443.7L384.2 324.1C382.9 316.4 385.5 308.5 391 303L476.9 217.9L358.6 200.5C350.7 199.3 343.9 194.3 340.5 187.2L287.9 78.95z" />
                       </svg>
                     </button>
 
-                    <button>
-                      <svg
-                        class="text-yellow-500 w-5 h-auto fill-current"
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 576 512"
-                      >
-                        <path d="M381.2 150.3L524.9 171.5C536.8 173.2 546.8 181.6 550.6 193.1C554.4 204.7 551.3 217.3 542.7 225.9L438.5 328.1L463.1 474.7C465.1 486.7 460.2 498.9 450.2 506C440.3 513.1 427.2 514 416.5 508.3L288.1 439.8L159.8 508.3C149 514 135.9 513.1 126 506C116.1 498.9 111.1 486.7 113.2 474.7L137.8 328.1L33.58 225.9C24.97 217.3 21.91 204.7 25.69 193.1C29.46 181.6 39.43 173.2 51.42 171.5L195 150.3L259.4 17.97C264.7 6.954 275.9-.0391 288.1-.0391C300.4-.0391 311.6 6.954 316.9 17.97L381.2 150.3z" />
-                      </svg>
-                    </button>
-
-                    <button onClick={() => printSomething(4)}>
+                    <button onClick={() => setRating(4)}>
                       <svg
                         class="text-yellow-500 w-5 h-auto fill-current"
                         xmlns="http://www.w3.org/2000/svg"
@@ -198,7 +288,7 @@ function App() {
                       </svg>
                     </button>
 
-                    <button onClick={() => printSomething(5)} class="mr-2">
+                    <button onClick={() => setRating(5)} class="mr-2">
                       <svg
                         class="text-yellow-500 w-5 h-auto fill-current"
                         xmlns="http://www.w3.org/2000/svg"
@@ -208,7 +298,7 @@ function App() {
                       </svg>
                     </button>
 
-                    <span class="text-slate-400 font-medium">3 out of 5</span>
+                    <span class="text-slate-400 font-medium">Rate Here!</span>
                   </div>
 
                   {/*      END stars        */}
