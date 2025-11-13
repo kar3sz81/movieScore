@@ -8,11 +8,3 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
 });
 
-// Source - https://stackoverflow.com/a
-// Posted by ansmonjol, modified by community. See post 'Timeline' for change history
-// Retrieved 2025-11-13, License - CC BY-SA 4.0
-
-server: {
-  allowedHosts: true
-}
-
