@@ -1,5 +1,6 @@
 //1 npm install @supabase/supabase-js
 //ignore row level security a security policybe vagy hol
+//friss
 
 import { useState } from "react";
 import "./App.css";
@@ -15,7 +16,7 @@ function App() {
   const [selectedMovie, setSelectedMovie] = useState(null);
   const user = Math.round(Math.random() * 1000).toString();
   const avatarURL = "https://i.pravatar.cc/48";
-  const full = false;
+  //const full = false;
   const [rating, setRating] = useState(0);
   const [tempRating, setTempRating] = useState(0);
 
