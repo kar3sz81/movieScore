@@ -14,7 +14,32 @@ function App() {
   const [searchWord, setSearchWord] = useState("dune");
   const [movieProfileSelected, setMovieProfileSelected] = useState(false);
   const [selectedMovie, setSelectedMovie] = useState(null);
-  const user = Math.round(Math.random() * 1000).toString();
+  // Keep a stable user value across re-renders (initialized only once)
+  // Initialize as empty, then set once from an external API on mount
+  const [user, setUser] = useState("");
+  useEffect(() => {
+    let isActive = true;
+    const fetchRandomName = async () => {
+      try {
+        // Fetch a random user name from an external API
+        const res = await fetch("https://randomuser.me/api/");
+        const data = await res.json();
+        const result = data?.results?.[0];
+        const first = result?.name?.first;
+        const last = result?.name?.last;
+        const fullName = [first, last].filter(Boolean).join(" ");
+        if (isActive) setUser(fullName || "Guest");
+      } catch (e) {
+        // Fallback to a guest identifier if API fails
+        if (isActive)
+          setUser(`Guest ${Math.round(Math.random() * 1000).toString()}`);
+      }
+    };
+    fetchRandomName();
+    return () => {
+      isActive = false;
+    };
+  }, []);
   const avatarURL = "https://i.pravatar.cc/48";
   //const full = false;
   const [rating, setRating] = useState(0);
