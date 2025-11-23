@@ -2,7 +2,7 @@
 //ignore row level security a security policybe vagy hol
 //friss
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import "./App.css";
 import supabase from "./supabase-client";
 import { useEffect } from "react";
@@ -40,10 +40,36 @@ function App() {
       isActive = false;
     };
   }, []);
-  const avatarURL = "https://i.pravatar.cc/48";
+  // Avatar behavior:
+  // - Should change on every full page reload.
+  // - Should remain stable during a single session (no changes across re-renders).
+  // To achieve this, generate a seed once per mount and avoid persisting it to storage.
+  const avatarSeedRef = useRef(null);
+  if (!avatarSeedRef.current) {
+    avatarSeedRef.current = `${Date.now()}-${Math.random()
+      .toString(36)
+      .slice(2, 10)}`;
+  }
+  const avatarURL = `https://i.pravatar.cc/48?u=${encodeURIComponent(
+    avatarSeedRef.current
+  )}`;
   //const full = false;
   const [rating, setRating] = useState(0);
   const [tempRating, setTempRating] = useState(0);
+  // Expanded card state and inline comment editing state
+  const [expandedMovieId, setExpandedMovieId] = useState(null);
+  const [commentEdited, setCommentEdited] = useState({}); // imdbID -> bool
+  const [commentText, setCommentText] = useState({}); // imdbID -> string
+  const commentRefs = useRef({}); // imdbID -> textarea/input element
+
+  // Rated movies and submission tracking
+  const [ratedMovies, setRatedMovies] = useState([]); // array of movie objects
+  const [submitted, setSubmitted] = useState({}); // imdbID -> true when OK was clicked
+  // Hover state for search-result card stars
+  const [hoveredMovieId, setHoveredMovieId] = useState(null);
+  const [hoverRating, setHoverRating] = useState(0);
+  // Selected rating per movie (1..10)
+  const [selectedRating, setSelectedRating] = useState({}); // imdbID -> number
 
   console.log(rating);
 
@@ -64,6 +90,133 @@ function App() {
     } else {
       setTodoList(data);
     }
+  };
+
+  // Focus the comment box and place caret before the first character (index 0)
+  useEffect(() => {
+    if (expandedMovieId && commentRefs.current[expandedMovieId]) {
+      const el = commentRefs.current[expandedMovieId];
+      try {
+        el.focus();
+        // Place caret at the very beginning
+        if (typeof el.setSelectionRange === "function") {
+          el.setSelectionRange(0, 0);
+        }
+      } catch (e) {
+        // no-op for environments where focusing might fail
+      }
+    }
+  }, [expandedMovieId]);
+
+  // Auto-resize helper so the textarea height fits its content
+  const autoResize = (el) => {
+    if (!el) return;
+    try {
+      el.style.height = "auto";
+      el.style.height = `${el.scrollHeight}px`;
+    } catch (_) {
+      // ignore sizing errors
+    }
+  };
+
+  // Keep expanded textarea sized when opening or its text changes
+  useEffect(() => {
+    if (expandedMovieId && commentRefs.current[expandedMovieId]) {
+      autoResize(commentRefs.current[expandedMovieId]);
+    }
+    // Also resize all rated movie textareas in case their text changed
+    if (ratedMovies?.length) {
+      ratedMovies.forEach((m) => autoResize(commentRefs.current[m._entryId || m.imdbID]));
+    }
+  }, [expandedMovieId, commentText, ratedMovies]);
+
+  const handleStarClick = (movie, value) => {
+    // store selected rating for this movie
+    if (typeof value === "number") {
+      setSelectedRating((prev) => ({ ...prev, [movie.imdbID]: value }));
+    }
+    // Re-open the textbox for editing if this movie was previously submitted
+    // by clearing its submitted flag. This enables the textarea again.
+    setSubmitted((prev) => {
+      if (!prev[movie.imdbID]) return prev;
+      const { [movie.imdbID]: _removed, ...rest } = prev;
+      return rest;
+    });
+    setExpandedMovieId(movie.imdbID);
+    // Initialize default text placeholder if not yet set
+    setCommentText((prev) =>
+      prev[movie.imdbID] !== undefined
+        ? prev
+        : { ...prev, [movie.imdbID]: "comment.." }
+    );
+    setCommentEdited((prev) => ({ ...prev, [movie.imdbID]: prev[movie.imdbID] || false }));
+  };
+
+  const handleCommentKeyDown = (movieId) => (e) => {
+    if (!commentEdited[movieId]) {
+      const isPrintable = e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey;
+      if (isPrintable) {
+        e.preventDefault();
+        setCommentEdited((prev) => ({ ...prev, [movieId]: true }));
+        setCommentText((prev) => ({ ...prev, [movieId]: e.key }));
+      } else if (e.key === "Backspace" || e.key === "Delete") {
+        e.preventDefault();
+        setCommentEdited((prev) => ({ ...prev, [movieId]: true }));
+        setCommentText((prev) => ({ ...prev, [movieId]: "" }));
+      }
+    }
+  };
+
+  const handleCommentChange = (movieId) => (e) => {
+    if (!commentEdited[movieId]) {
+      // If somehow change occurs without keydown (e.g., paste), treat as first edit and replace all.
+      setCommentEdited((prev) => ({ ...prev, [movieId]: true }));
+      setCommentText((prev) => ({ ...prev, [movieId]: e.target.value }));
+    } else {
+      setCommentText((prev) => ({ ...prev, [movieId]: e.target.value }));
+    }
+    // Resize the textarea as the user types
+    autoResize(commentRefs.current[movieId]);
+  };
+
+  // When user clicks OK on a movie card
+  const handleOk = (movie) => {
+    // Always create a new copy in ratedMovies (even if it existed before)
+    // and append it under previously created cards.
+    const newEntry = {
+      ...movie,
+      rating: selectedRating[movie.imdbID] || 0,
+      // Persist the exact comment used for this saved copy so each duplicate keeps its own text
+      savedComment:
+        commentText[movie.imdbID] ?? "comment..",
+      _entryId: `${movie.imdbID}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    };
+    setRatedMovies((prev) => [...prev, newEntry]);
+    // Clear any previously selected rating for this movie in the search list.
+    // This ensures that when the movie appears again among search results,
+    // no stars are shown filled until the user clicks a star again.
+    setSelectedRating((prev) => {
+      const { [movie.imdbID]: _removed, ...rest } = prev;
+      return rest;
+    });
+    // mark as submitted to freeze textarea and hide OK button
+    setSubmitted((prev) => ({ ...prev, [movie.imdbID]: true }));
+    // Reset the in-search comment state so the textarea shows the default
+    // "comment.." next time this movie is opened in the search area
+    setCommentText((prev) => {
+      const { [movie.imdbID]: _removed, ...rest } = prev;
+      return rest;
+    });
+    setCommentEdited((prev) => {
+      const { [movie.imdbID]: _removed, ...rest } = prev;
+      return rest;
+    });
+    // clear search input and results, collapse any expanded card
+    setExpandedMovieId(null);
+    setSearchWord("");
+    setMovies(null);
+    // Ensure the rated-movies textarea will fit its content after it renders
+    setTimeout(() => autoResize(commentRefs.current[newEntry._entryId || movie.imdbID]), 0);
   };
 
   const clickedOnAsearchResult = (movie) => {
@@ -173,7 +326,7 @@ function App() {
                     class="w-8 h-8 rounded-full mt-4"
                   />
                   <div class="m-2">
-                    <h2 class="text-sm font-semibold mt-2">Hi, guest{user}!</h2>
+                    <h2 class="text-sm font-semibold mt-2">Hi, {user}!</h2>
                     <p class="text-gray-500 text-xs">Long time not see..</p>
                   </div>
                 </div>
@@ -243,22 +396,94 @@ function App() {
             <ul class="bg-white rounded-lg shadow divide-y divide-gray-200 max-w-sm">
               {movies.map((movie) => (
                 <li
-                  onClick={() => clickedOnAsearchResult(movie)}
                   key={movie.imdbID}
-                  class="px-6 py-4"
+                  class={`px-6 py-4 ${
+                    expandedMovieId && expandedMovieId !== movie.imdbID
+                      ? "filter blur-[1px] opacity-50"
+                      : ""
+                  }`}
                 >
                   <div class="flex justify-between">
                     <span class="font-semibold text-lg">{movie.Title}</span>
                     <span class="text-gray-500 text-xs">{movie.Year}</span>
                   </div>
-                  <img src={movie.Poster} />
+                  <img class="w-full" src={movie.Poster} />
 
                   {/*      START stars        */}
                   {/*      START stars        */}
                   {/*      START stars        */}
                   {/*      START stars        */}
                   {/*      START stars        */}
+                  <div class="mt-3 flex items-center justify-between w-full" aria-label="10-level rating">
+                    {/* Hollow stars that fill on hover, span full image width */}
+                    <svg onMouseEnter={() => { setHoveredMovieId(movie.imdbID); setHoverRating(1); }} onMouseLeave={() => { setHoverRating(0); setHoveredMovieId(null); }} onClick={() => handleStarClick(movie, 1)} class="cursor-pointer w-6 h-6 text-yellow-500 transition-colors shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" aria-hidden="true">
+                      <path class={`${(hoveredMovieId===movie.imdbID && hoverRating>=1) || (selectedRating[movie.imdbID] >= 1) ? 'fill-current' : 'fill-transparent'}`} stroke="currentColor" stroke-width="30" stroke-linejoin="round" d="M316.9 17.97L381.2 150.3 524.9 171.5c11.9 1.7 21.9 10.1 25.7 21.6s-.1 23.6-8.7 32.2L438.5 328.1 463.1 474.7c2 12-2.9 24.2-12.9 31.3s-23 6.9-33.7 1.2L288.1 439.8 159.8 508.3c-10.8 5.7-23.9 4.8-33.8-2.3s-14.9-19.3-12.8-31.3L137.8 328.1 33.58 225.9c-8.61-8.6-11.67-21.2-7.89-32.8s13.77-21.5 25.68-23.2L195 150.3 259.4 17.97C264.7 6.954 275.9-.039 288.1-.039s23.4 6.993 28.8 18.009z"/>
+                    </svg>
+                    <svg onMouseEnter={() => { setHoveredMovieId(movie.imdbID); setHoverRating(2); }} onMouseLeave={() => { setHoverRating(0); setHoveredMovieId(null); }} onClick={() => handleStarClick(movie, 2)} class="cursor-pointer w-6 h-6 text-yellow-500 transition-colors shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" aria-hidden="true">
+                      <path class={`${(hoveredMovieId===movie.imdbID && hoverRating>=2) || (selectedRating[movie.imdbID] >= 2) ? 'fill-current' : 'fill-transparent'}`} stroke="currentColor" stroke-width="30" stroke-linejoin="round" d="M316.9 17.97L381.2 150.3 524.9 171.5c11.9 1.7 21.9 10.1 25.7 21.6s-.1 23.6-8.7 32.2L438.5 328.1 463.1 474.7c2 12-2.9 24.2-12.9 31.3s-23 6.9-33.7 1.2L288.1 439.8 159.8 508.3c-10.8 5.7-23.9 4.8-33.8-2.3s-14.9-19.3-12.8-31.3L137.8 328.1 33.58 225.9c-8.61-8.6-11.67-21.2-7.89-32.8s13.77-21.5 25.68-23.2L195 150.3 259.4 17.97C264.7 6.954 275.9-.039 288.1-.039s23.4 6.993 28.8 18.009z"/>
+                    </svg>
+                    <svg onMouseEnter={() => { setHoveredMovieId(movie.imdbID); setHoverRating(3); }} onMouseLeave={() => { setHoverRating(0); setHoveredMovieId(null); }} onClick={() => handleStarClick(movie, 3)} class="cursor-pointer w-6 h-6 text-yellow-500 transition-colors shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" aria-hidden="true">
+                      <path class={`${(hoveredMovieId===movie.imdbID && hoverRating>=3) || (selectedRating[movie.imdbID] >= 3) ? 'fill-current' : 'fill-transparent'}`} stroke="currentColor" stroke-width="30" stroke-linejoin="round" d="M316.9 17.97L381.2 150.3 524.9 171.5c11.9 1.7 21.9 10.1 25.7 21.6s-.1 23.6-8.7 32.2L438.5 328.1 463.1 474.7c2 12-2.9 24.2-12.9 31.3s-23 6.9-33.7 1.2L288.1 439.8 159.8 508.3c-10.8 5.7-23.9 4.8-33.8-2.3s-14.9-19.3-12.8-31.3L137.8 328.1 33.58 225.9c-8.61-8.6-11.67-21.2-7.89-32.8s13.77-21.5 25.68-23.2L195 150.3 259.4 17.97C264.7 6.954 275.9-.039 288.1-.039s23.4 6.993 28.8 18.009z"/>
+                    </svg>
+                    <svg onMouseEnter={() => { setHoveredMovieId(movie.imdbID); setHoverRating(4); }} onMouseLeave={() => { setHoverRating(0); setHoveredMovieId(null); }} onClick={() => handleStarClick(movie, 4)} class="cursor-pointer w-6 h-6 text-yellow-500 transition-colors shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" aria-hidden="true">
+                      <path class={`${(hoveredMovieId===movie.imdbID && hoverRating>=4) || (selectedRating[movie.imdbID] >= 4) ? 'fill-current' : 'fill-transparent'}`} stroke="currentColor" stroke-width="30" stroke-linejoin="round" d="M316.9 17.97L381.2 150.3 524.9 171.5c11.9 1.7 21.9 10.1 25.7 21.6s-.1 23.6-8.7 32.2L438.5 328.1 463.1 474.7c2 12-2.9 24.2-12.9 31.3s-23 6.9-33.7 1.2L288.1 439.8 159.8 508.3c-10.8 5.7-23.9 4.8-33.8-2.3s-14.9-19.3-12.8-31.3L137.8 328.1 33.58 225.9c-8.61-8.6-11.67-21.2-7.89-32.8s13.77-21.5 25.68-23.2L195 150.3 259.4 17.97C264.7 6.954 275.9-.039 288.1-.039s23.4 6.993 28.8 18.009z"/>
+                    </svg>
+                    <svg onMouseEnter={() => { setHoveredMovieId(movie.imdbID); setHoverRating(5); }} onMouseLeave={() => { setHoverRating(0); setHoveredMovieId(null); }} onClick={() => handleStarClick(movie, 5)} class="cursor-pointer w-6 h-6 text-yellow-500 transition-colors shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" aria-hidden="true">
+                      <path class={`${(hoveredMovieId===movie.imdbID && hoverRating>=5) || (selectedRating[movie.imdbID] >= 5) ? 'fill-current' : 'fill-transparent'}`} stroke="currentColor" stroke-width="30" stroke-linejoin="round" d="M316.9 17.97L381.2 150.3 524.9 171.5c11.9 1.7 21.9 10.1 25.7 21.6s-.1 23.6-8.7 32.2L438.5 328.1 463.1 474.7c2 12-2.9 24.2-12.9 31.3s-23 6.9-33.7 1.2L288.1 439.8 159.8 508.3c-10.8 5.7-23.9 4.8-33.8-2.3s-14.9-19.3-12.8-31.3L137.8 328.1 33.58 225.9c-8.61-8.6-11.67-21.2-7.89-32.8s13.77-21.5 25.68-23.2L195 150.3 259.4 17.97C264.7 6.954 275.9-.039 288.1-.039s23.4 6.993 28.8 18.009z"/>
+                    </svg>
+                    <svg onMouseEnter={() => { setHoveredMovieId(movie.imdbID); setHoverRating(6); }} onMouseLeave={() => { setHoverRating(0); setHoveredMovieId(null); }} onClick={() => handleStarClick(movie, 6)} class="cursor-pointer w-6 h-6 text-yellow-500 transition-colors shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" aria-hidden="true">
+                      <path class={`${(hoveredMovieId===movie.imdbID && hoverRating>=6) || (selectedRating[movie.imdbID] >= 6) ? 'fill-current' : 'fill-transparent'}`} stroke="currentColor" stroke-width="30" stroke-linejoin="round" d="M316.9 17.97L381.2 150.3 524.9 171.5c11.9 1.7 21.9 10.1 25.7 21.6s-.1 23.6-8.7 32.2L438.5 328.1 463.1 474.7c2 12-2.9 24.2-12.9 31.3s-23 6.9-33.7 1.2L288.1 439.8 159.8 508.3c-10.8 5.7-23.9 4.8-33.8-2.3s-14.9-19.3-12.8-31.3L137.8 328.1 33.58 225.9c-8.61-8.6-11.67-21.2-7.89-32.8s13.77-21.5 25.68-23.2L195 150.3 259.4 17.97C264.7 6.954 275.9-.039 288.1-.039s23.4 6.993 28.8 18.009z"/>
+                    </svg>
+                    <svg onMouseEnter={() => { setHoveredMovieId(movie.imdbID); setHoverRating(7); }} onMouseLeave={() => { setHoverRating(0); setHoveredMovieId(null); }} onClick={() => handleStarClick(movie, 7)} class="cursor-pointer w-6 h-6 text-yellow-500 transition-colors shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" aria-hidden="true">
+                      <path class={`${(hoveredMovieId===movie.imdbID && hoverRating>=7) || (selectedRating[movie.imdbID] >= 7) ? 'fill-current' : 'fill-transparent'}`} stroke="currentColor" stroke-width="30" stroke-linejoin="round" d="M316.9 17.97L381.2 150.3 524.9 171.5c11.9 1.7 21.9 10.1 25.7 21.6s-.1 23.6-8.7 32.2L438.5 328.1 463.1 474.7c2 12-2.9 24.2-12.9 31.3s-23 6.9-33.7 1.2L288.1 439.8 159.8 508.3c-10.8 5.7-23.9 4.8-33.8-2.3s-14.9-19.3-12.8-31.3L137.8 328.1 33.58 225.9c-8.61-8.6-11.67-21.2-7.89-32.8s13.77-21.5 25.68-23.2L195 150.3 259.4 17.97C264.7 6.954 275.9-.039 288.1-.039s23.4 6.993 28.8 18.009z"/>
+                    </svg>
+                    <svg onMouseEnter={() => { setHoveredMovieId(movie.imdbID); setHoverRating(8); }} onMouseLeave={() => { setHoverRating(0); setHoveredMovieId(null); }} onClick={() => handleStarClick(movie, 8)} class="cursor-pointer w-6 h-6 text-yellow-500 transition-colors shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" aria-hidden="true">
+                      <path class={`${(hoveredMovieId===movie.imdbID && hoverRating>=8) || (selectedRating[movie.imdbID] >= 8) ? 'fill-current' : 'fill-transparent'}`} stroke="currentColor" stroke-width="30" stroke-linejoin="round" d="M316.9 17.97L381.2 150.3 524.9 171.5c11.9 1.7 21.9 10.1 25.7 21.6s-.1 23.6-8.7 32.2L438.5 328.1 463.1 474.7c2 12-2.9 24.2-12.9 31.3s-23 6.9-33.7 1.2L288.1 439.8 159.8 508.3c-10.8 5.7-23.9 4.8-33.8-2.3s-14.9-19.3-12.8-31.3L137.8 328.1 33.58 225.9c-8.61-8.6-11.67-21.2-7.89-32.8s13.77-21.5 25.68-23.2L195 150.3 259.4 17.97C264.7 6.954 275.9-.039 288.1-.039s23.4 6.993 28.8 18.009z"/>
+                    </svg>
+                    <svg onMouseEnter={() => { setHoveredMovieId(movie.imdbID); setHoverRating(9); }} onMouseLeave={() => { setHoverRating(0); setHoveredMovieId(null); }} onClick={() => handleStarClick(movie, 9)} class="cursor-pointer w-6 h-6 text-yellow-500 transition-colors shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" aria-hidden="true">
+                      <path class={`${(hoveredMovieId===movie.imdbID && hoverRating>=9) || (selectedRating[movie.imdbID] >= 9) ? 'fill-current' : 'fill-transparent'}`} stroke="currentColor" stroke-width="30" stroke-linejoin="round" d="M316.9 17.97L381.2 150.3 524.9 171.5c11.9 1.7 21.9 10.1 25.7 21.6s-.1 23.6-8.7 32.2L438.5 328.1 463.1 474.7c2 12-2.9 24.2-12.9 31.3s-23 6.9-33.7 1.2L288.1 439.8 159.8 508.3c-10.8 5.7-23.9 4.8-33.8-2.3s-14.9-19.3-12.8-31.3L137.8 328.1 33.58 225.9c-8.61-8.6-11.67-21.2-7.89-32.8s13.77-21.5 25.68-23.2L195 150.3 259.4 17.97C264.7 6.954 275.9-.039 288.1-.039s23.4 6.993 28.8 18.009z"/>
+                    </svg>
+                    <svg onMouseEnter={() => { setHoveredMovieId(movie.imdbID); setHoverRating(10); }} onMouseLeave={() => { setHoverRating(0); setHoveredMovieId(null); }} onClick={() => handleStarClick(movie, 10)} class="cursor-pointer w-6 h-6 text-yellow-500 transition-colors shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" aria-hidden="true">
+                      <path class={`${(hoveredMovieId===movie.imdbID && hoverRating>=10) || (selectedRating[movie.imdbID] >= 10) ? 'fill-current' : 'fill-transparent'}`} stroke="currentColor" stroke-width="30" stroke-linejoin="round" d="M316.9 17.97L381.2 150.3 524.9 171.5c11.9 1.7 21.9 10.1 25.7 21.6s-.1 23.6-8.7 32.2L438.5 328.1 463.1 474.7c2 12-2.9 24.2-12.9 31.3s-23 6.9-33.7 1.2L288.1 439.8 159.8 508.3c-10.8 5.7-23.9 4.8-33.8-2.3s-14.9-19.3-12.8-31.3L137.8 328.1 33.58 225.9c-8.61-8.6-11.67-21.2-7.89-32.8s13.77-21.5 25.68-23.2L195 150.3 259.4 17.97C264.7 6.954 275.9-.039 288.1-.039s23.4 6.993 28.8 18.009z"/>
+                    </svg>
+                  </div>
+                  {expandedMovieId === movie.imdbID && (
+                    <div class="mt-4 pt-4 border-t border-gray-200">
+                      {/* Section 1: avatar + user name */}
+                      <div class="flex items-center space-x-3 mb-3">
+                        <img src={avatarURL} alt="avatar" class="w-10 h-10 rounded-full" />
+                        <div class="text-sm text-gray-700 font-medium">{user || "Guest"}</div>
+                      </div>
 
+                      {/* Section 2: textbox with pre-existing text and caret at start */}
+                      <div class="mb-3">
+                        <textarea
+                          ref={(el) => (commentRefs.current[movie.imdbID] = el)}
+                          class={`w-full resize-none overflow-hidden p-2 border rounded focus:outline-none focus:ring-2 focus:ring-sky-500 ${submitted[movie.imdbID] ? "bg-gray-100 border-gray-200 text-gray-500" : "border-gray-300"}`}
+                          rows={1}
+                          value={commentText[movie.imdbID] ?? "comment.."}
+                          onKeyDown={handleCommentKeyDown(movie.imdbID)}
+                          onChange={handleCommentChange(movie.imdbID)}
+                          disabled={!!submitted[movie.imdbID]}
+                          readOnly={!!submitted[movie.imdbID]}
+                        />
+                      </div>
+
+                      {/* Section 3: OK button bottom-left under textbox */}
+                      <div class="flex">
+                        {submitted[movie.imdbID] ? null : (
+                          <button
+                            type="button"
+                            class="px-4 py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700 active:translate-y-[1px]"
+                            onClick={() => handleOk(movie)}
+                          >
+                            OK
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                    {/*
                   <div class="flex justify-center items-center bg-white p-8 mr-9 shadow-slate-200 rounded-lg w-auto space-x-1 lg:space-x-2">
                     <button
                       onClick={() => setRating(1)}
@@ -353,7 +578,7 @@ function App() {
 
                     <span class="text-slate-400 font-medium">Rate Here!</span>
                   </div>
-
+*/}
                   {/*      END stars        */}
                   {/*      END stars        */}
                   {/*      END stars        */}
@@ -363,8 +588,114 @@ function App() {
               ))}
             </ul>
           )}
+
+          {/* Rated movies Area */}
+          <div class="mt-8">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">Rated Movies</h3>
+            {/* Group rated entries by imdbID so duplicates appear under the same movie */}
+            {(() => {
+              const groups = ratedMovies.reduce((acc, entry) => {
+                const id = entry.imdbID;
+                if (!acc[id]) acc[id] = [];
+                acc[id].push(entry);
+                return acc;
+              }, {});
+              const ids = Object.keys(groups);
+              if (ids.length === 0) return (
+                <div class="text-sm text-gray-500">No rated movies yet.</div>
+              );
+              return (
+                <ul class="bg-white rounded-lg shadow divide-y divide-gray-200 max-w-sm">
+                  {ids.map((id) => {
+                    const entries = groups[id];
+                    // Use the first entry as the main card (with poster)
+                    const main = entries[0];
+                    const rest = entries.slice(1);
+                    return (
+                      <li key={`${id}-group`} class="px-6 py-4">
+                        {/* Main movie header */}
+                        <div class="flex justify-between">
+                          <span class="font-semibold text-lg">{main.Title}</span>
+                          <span class="text-gray-500 text-xs">{main.Year}</span>
+                        </div>
+                        {/* Show poster only for the first (main) entry */}
+                        {main.Poster && (
+                          <img class="w-full" src={main.Poster} />
+                        )}
+                        {/* Render the saved content for the main entry */}
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                          <div class="mb-3 flex items-center justify-between w-full text-yellow-500">
+                            {[1,2,3,4,5,6,7,8,9,10].map((n) => (
+                              <svg key={n} class="w-5 h-5 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" aria-hidden="true">
+                                <path class={`${(main.rating || 0) >= n ? 'fill-current' : 'fill-transparent'}`} stroke="currentColor" stroke-width="30" stroke-linejoin="round" d="M316.9 17.97L381.2 150.3 524.9 171.5c11.9 1.7 21.9 10.1 25.7 21.6s-.1 23.6-8.7 32.2L438.5 328.1 463.1 474.7c2 12-2.9 24.2-12.9 31.3s-23 6.9-33.7 1.2L288.1 439.8 159.8 508.3c-10.8 5.7-23.9 4.8-33.8-2.3s-14.9-19.3-12.8-31.3L137.8 328.1 33.58 225.9c-8.61-8.6-11.67-21.2-7.89-32.8s13.77-21.5 25.68-23.2L195 150.3 259.4 17.97C264.7 6.954 275.9-.039 288.1-.039s23.4 6.993 28.8 18.009z"/>
+                              </svg>
+                            ))}
+                          </div>
+                          <div class="flex items-center space-x-3 mb-3">
+                            <img src={avatarURL} alt="avatar" class="w-10 h-10 rounded-full" />
+                            <div class="text-sm text-gray-700 font-medium">{user || "Guest"}</div>
+                          </div>
+                          <div class="mb-3">
+                            <textarea
+                              ref={(el) => (commentRefs.current[main._entryId || main.imdbID] = el)}
+                              class="w-full resize-none overflow-hidden p-2 border border-gray-200 rounded bg-gray-100 text-gray-500"
+                              rows={1}
+                              value={
+                                main.savedComment ??
+                                commentText[main.imdbID] ??
+                                "comment.."
+                              }
+                              disabled
+                              readOnly
+                            />
+                          </div>
+                        </div>
+
+                        {/* Render duplicates under the same movie WITHOUT poster */}
+                        {rest.length > 0 && (
+                          <div class="mt-6 space-y-6">
+                            {rest.map((dup) => (
+                              <div key={dup._entryId} class="pt-4 border-t border-gray-200">
+                                {/* No title/year and no poster for duplicates */}
+                                <div class="mb-3 flex items-center justify-between w-full text-yellow-500">
+                                  {[1,2,3,4,5,6,7,8,9,10].map((n) => (
+                                    <svg key={n} class="w-5 h-5 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" aria-hidden="true">
+                                      <path class={`${(dup.rating || 0) >= n ? 'fill-current' : 'fill-transparent'}`} stroke="currentColor" stroke-width="30" stroke-linejoin="round" d="M316.9 17.97L381.2 150.3 524.9 171.5c11.9 1.7 21.9 10.1 25.7 21.6s-.1 23.6-8.7 32.2L438.5 328.1 463.1 474.7c2 12-2.9 24.2-12.9 31.3s-23 6.9-33.7 1.2L288.1 439.8 159.8 508.3c-10.8 5.7-23.9 4.8-33.8-2.3s-14.9-19.3-12.8-31.3L137.8 328.1 33.58 225.9c-8.61-8.6-11.67-21.2-7.89-32.8s13.77-21.5 25.68-23.2L195 150.3 259.4 17.97C264.7 6.954 275.9-.039 288.1-.039s23.4 6.993 28.8 18.009z"/>
+                                    </svg>
+                                  ))}
+                                </div>
+                                <div class="flex items-center space-x-3 mb-3">
+                                  <img src={avatarURL} alt="avatar" class="w-10 h-10 rounded-full" />
+                                  <div class="text-sm text-gray-700 font-medium">{user || "Guest"}</div>
+                                </div>
+                                <div class="mb-1">
+                                  <textarea
+                                    ref={(el) => (commentRefs.current[dup._entryId || dup.imdbID] = el)}
+                                    class="w-full resize-none overflow-hidden p-2 border border-gray-200 rounded bg-gray-100 text-gray-500"
+                                    rows={1}
+                                    value={
+                                      dup.savedComment ??
+                                      commentText[dup.imdbID] ??
+                                      "comment.."
+                                    }
+                                    disabled
+                                    readOnly
+                                  />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              );
+            })()}
+          </div>
         </div>
       </div>
+        {/*
       <div>
         {movieProfileSelected && selectedMovie && (
           <div class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl">
@@ -464,7 +795,7 @@ function App() {
             </li>
           ))}
         </ul>
-      </div>
+      </div>*/}
     </div>
   );
 }
