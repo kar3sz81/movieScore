@@ -180,8 +180,50 @@ function App() {
   };
 
   // When user clicks OK on a movie card
-  const handleOk = (movie) => {
-    // Always create a new copy in ratedMovies (even if it existed before)
+  const handleOk = async (movie) => {
+
+
+      //sajat cucc START
+
+      const newLikedMovieData = {
+          ImdbID: movie.imdbID,
+          Title: movie.Title,
+          Year: movie.Year,
+          Poster:movie.Poster,
+          UserName:user,
+          UserAvatarID:"71",
+          UserStars:5,
+          UserComment:"blabla bla"
+
+      };
+
+        console.log("ezt a muvit kuldted be(movie): ",movie);
+      console.log("ezt fogod feltolteni Supabasebe(newlikedMovieData): ",newLikedMovieData);
+
+
+
+
+      const { data, error } = await supabase
+          .from("moviescore")
+          .insert([newLikedMovieData])
+          .select()
+          .single();
+
+      if (error) {
+          console.log("error adding movieCard: ", error);
+      } else {
+          //setTodoList((prev) => [...prev, data]);
+          console.log("moviescore data added:",data);
+          //setNewTodo("");
+      }
+
+
+
+      //sajat cucc VEGE
+
+
+
+      // Always create a new copy in ratedMovies (even if it existed before)
     // and append it under previously created cards.
     const newEntry = {
       ...movie,
@@ -229,6 +271,9 @@ function App() {
     console.log(`${number}csillag klikk`);
   };
 
+
+
+/*
   const addTodo = async () => {
     const newTodoData = {
       name: newTodo,
@@ -248,6 +293,9 @@ function App() {
       setNewTodo("");
     }
   };
+*/
+
+
 
   const pipa = async (id, isCompleted) => {
     const { data, error } = await supabase
@@ -304,6 +352,41 @@ function App() {
   {
     /*return */
   }
+
+
+
+    const handleOK2 = async () => {
+        const newLikedMovieData = {
+            ImdbID: "70",
+            Title: "pifPuff film",
+            Year: "2022",
+            Poster:"www.itvvan.hu",
+            UserName:"jorj bush",
+            UserAvatarID:"71",
+            UserStars:5,
+            UserComment:"blabla bla"
+
+        };
+
+        console.log("dummy movie data:",newLikedMovieData)
+
+        const { data, error } = await supabase
+            .from("moviescore")
+            .insert([newLikedMovieData])
+            .select()
+            .single();
+
+        if (error) {
+            console.log("error adding movieCard: ", error);
+        } else {
+            //setTodoList((prev) => [...prev, data]);
+            console.log("moviescore data added:",data);
+            //setNewTodo("");
+        }
+
+
+    };
+
 
   return (
     <div class="relative flex flex-col items-start max-w-screen-xl px-4 mx-auto md:flex-row sm:px-6 p-8">
@@ -403,18 +486,25 @@ function App() {
                       : ""
                   }`}
                 >
-                  <div class="flex justify-between">
-                    <span class="font-semibold text-lg">{movie.Title}</span>
-                    <span class="text-gray-500 text-xs">{movie.Year}</span>
-                  </div>
-                  <img class="w-full" src={movie.Poster} />
+                    <div class="flex justify-between">
+                        <span class="font-semibold text-lg">{movie.Title}</span>
+                        <span class="text-gray-500 text-xs">{movie.Year}</span>
+                        <button
+                            type="button"
+                            className="px-4 py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700 active:translate-y-[1px]"
+                            onClick={handleOK2}
+                        >
+                            OK
+                        </button>
+                    </div>
+                    <img class="w-full" src={movie.Poster}/>
 
-                  {/*      START stars        */}
-                  {/*      START stars        */}
-                  {/*      START stars        */}
-                  {/*      START stars        */}
-                  {/*      START stars        */}
-                  <div class="mt-3 flex items-center justify-between w-full" aria-label="10-level rating">
+                    {/*      START stars        */}
+                    {/*      START stars        */}
+                    {/*      START stars        */}
+                    {/*      START stars        */}
+                    {/*      START stars        */}
+                    <div class="mt-3 flex items-center justify-between w-full" aria-label="10-level rating">
                     {/* Hollow stars that fill on hover, span full image width */}
                     <svg onMouseEnter={() => { setHoveredMovieId(movie.imdbID); setHoverRating(1); }} onMouseLeave={() => { setHoverRating(0); setHoveredMovieId(null); }} onClick={() => handleStarClick(movie, 1)} class="cursor-pointer w-6 h-6 text-yellow-500 transition-colors shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" aria-hidden="true">
                       <path class={`${(hoveredMovieId===movie.imdbID && hoverRating>=1) || (selectedRating[movie.imdbID] >= 1) ? 'fill-current' : 'fill-transparent'}`} stroke="currentColor" stroke-width="30" stroke-linejoin="round" d="M316.9 17.97L381.2 150.3 524.9 171.5c11.9 1.7 21.9 10.1 25.7 21.6s-.1 23.6-8.7 32.2L438.5 328.1 463.1 474.7c2 12-2.9 24.2-12.9 31.3s-23 6.9-33.7 1.2L288.1 439.8 159.8 508.3c-10.8 5.7-23.9 4.8-33.8-2.3s-14.9-19.3-12.8-31.3L137.8 328.1 33.58 225.9c-8.61-8.6-11.67-21.2-7.89-32.8s13.77-21.5 25.68-23.2L195 150.3 259.4 17.97C264.7 6.954 275.9-.039 288.1-.039s23.4 6.993 28.8 18.009z"/>
@@ -479,6 +569,7 @@ function App() {
                           >
                             OK
                           </button>
+
                         )}
                       </div>
                     </div>
