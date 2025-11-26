@@ -1,6 +1,8 @@
 //1 npm install @supabase/supabase-js
 //ignore row level security a security policybe vagy hol
-//friss
+//lehessen uj mozit letrehozni
+//lehessen irni ha baj van az oldallal
+//magyar zaszlora kattintani magyaritasert.
 
 import { useRef, useState } from "react";
 import "./App.css";
@@ -185,15 +187,46 @@ function App() {
 
       //sajat cucc START
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
       const newLikedMovieData = {
           ImdbID: movie.imdbID,
           Title: movie.Title,
           Year: movie.Year,
           Poster:movie.Poster,
           UserName:user,
-          UserAvatarID:"71",
-          UserStars:5,
-          UserComment:"blabla bla"
+          UserAvatarURL:avatarURL,
+          UserRating:selectedRating,
+          UserComment:commentText
 
       };
 
