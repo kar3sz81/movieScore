@@ -1,3 +1,5 @@
+//a ratedMovies setRatedmovies a kkulcs, azt kellett vola feltolteni adatbazisba, es lehivni, mert a ratedmovies area-ba is azt hasznalja
+
 //1 npm install @supabase/supabase-js
 //ignore row level security a security policybe vagy hol
 //lehessen uj mozit letrehozni
@@ -230,7 +232,7 @@ function App() {
 
       };
 
-        console.log("ezt a muvit kuldted be(movie): ",movie);
+      console.log("ezt a muvit kuldted be(movie): ",movie);
       console.log("ezt fogod feltolteni Supabasebe(newlikedMovieData): ",newLikedMovieData);
 
 
@@ -713,11 +715,55 @@ function App() {
             </ul>
           )}
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
           {/* Rated movies Area */}
           <div class="mt-8">
             <h3 class="text-2xl font-bold text-gray-800 mb-4">Rated Movies</h3>
             {/* Group rated entries by imdbID so duplicates appear under the same movie */}
             {(() => {
+                console.log("igy nez ki a ratedMovies: ",ratedMovies)
               const groups = ratedMovies.reduce((acc, entry) => {
                 const id = entry.imdbID;
                 if (!acc[id]) acc[id] = [];
