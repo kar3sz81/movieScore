@@ -1,3 +1,5 @@
+
+//a handleOK vagy a movie hoz nem fer hozza , vagy a ratedMovie hoz nem fer hozza.
 //a ratedMovies setRatedmovies a kkulcs, azt kellett vola feltolteni adatbazisba, es lehivni, mert a ratedmovies area-ba is azt hasznalja
 
 //1 npm install @supabase/supabase-js
@@ -134,6 +136,87 @@ function App() {
     }
   }, [expandedMovieId, commentText, ratedMovies]);
 
+
+
+/*
+
+
+
+
+    useEffect(() => {
+
+
+
+
+        const uploadMovieData = async () => {
+            try {
+
+
+                const newLikedMovieData = {
+                    imdbID: ratedMovies.imdbID,
+                    Title: ratedMovies.Title,
+                    Year: ratedMovies.Year,
+                    Poster:ratedMovies.Poster,
+                    UserName:user,
+                    UserAvatarURL:avatarURL,
+                    UserRating:selectedRating,
+                    UserComment:commentText
+
+                };
+
+                console.log("ezt a muvit kuldted be(movie): ",ratedMovies);
+                console.log("ezt fogod feltolteni Supabasebe(newlikedMovieData): ",newLikedMovieData);
+
+
+
+
+                const { data, error } = supabase
+                    .from("moviescore")
+                    .insert([newLikedMovieData])
+                    .select()
+                    .single();
+
+                if (error) {
+                    console.log("error adding movieCard: ", error);
+                } else {
+                    //setTodoList((prev) => [...prev, data]);
+                    console.log("moviescore data added:",data);
+                    //setNewTodo("");
+                }
+
+            } catch (e) {
+              console.log(e);
+            }
+        };
+        uploadMovieData();
+
+
+
+    }, [ratedMovies]);
+
+
+
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   const handleStarClick = (movie, value) => {
     // store selected rating for this movie
     if (typeof value === "number") {
@@ -186,53 +269,72 @@ function App() {
   // When user clicks OK on a movie card
   const handleOk = async (movie) => {
 
+console.log("igy nez ki a (movie): ",movie);
 
-      //sajat cucc START
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+      console.log("most feltoltjuk  adattal (movie)-bol a (newLikedMovieData)-t");
 
       const newLikedMovieData = {
-          ImdbID: movie.imdbID,
+          imdbID: movie.imdbID,
           Title: movie.Title,
           Year: movie.Year,
           Poster:movie.Poster,
-          UserName:user,
-          UserAvatarURL:avatarURL,
-          UserRating:selectedRating,
-          UserComment:commentText
+          //Type: movie.Type,
+
+          userName:user,
+          avatarURL:avatarURL,
+          rating:selectedRating[movie.imdbID],
+          userComment:commentText[movie.imdbID],
+      };
+      console.log("ezt fogod feltolteni Supabasebe(newlikedMovieData): ",newLikedMovieData);
+      console.log(user)
+      console.log(avatarURL);
+      console.log(selectedRating[movie.imdbID]);
+      console.log(commentText[movie.imdbID]);
+
+
+      const { data, error } = await supabase
+          .from("moviescore")
+          .insert([newLikedMovieData])
+          .select()
+          .single();
+
+      if (error) {
+          console.log("error adding movieCard: ", error);
+      } else {
+          //setTodoList((prev) => [...prev, data]);
+          console.log("moviescore data added:",data);
+          //setNewTodo("");
+      }
+
+
+
+      //megis ide, csak ratedMovies legyen a movie hejett.
+      //a masik feltoltesi kierletet meg kommenteld ki.. (*useffect felul)
+      //elotte varakoztatni 2 masodpercig hogy tuti a jo ratedmovieshoz nyukljon hozza??
+
+
+
+
+      //sajat cucc START
+/*
+console.log("vartun 10 szekundumot, most feltotltjuk  adattal a newLikedMovieData-t");
+
+      const newLikedMovieData = {
+          imdbID: ratedMovies.imdbID,
+          Title: ratedMovies.Title,
+          Year: ratedMovies.Year,
+          Poster:ratedMovies.Poster,
+          Type: ratedMovies.Type,
+
+         // UserName:user,
+         // UserAvatarURL:avatarURL,
+         // UserRating:selectedRating,
+         // UserComment:commentText
+
 
       };
 
-      console.log("ezt a muvit kuldted be(movie): ",movie);
+      console.log("ezt a muvit kuldted be innen, from:(ratedMovies): ",ratedMovies);
       console.log("ezt fogod feltolteni Supabasebe(newlikedMovieData): ",newLikedMovieData);
 
 
@@ -252,7 +354,7 @@ function App() {
           //setNewTodo("");
       }
 
-
+*/
 
       //sajat cucc VEGE
 
