@@ -7,6 +7,8 @@
 //lehessen uj mozit letrehozni
 //lehessen irni ha baj van az oldallal
 //magyar zaszlora kattintani magyaritasert.
+//toltokepernyo csapó, ami számol a négyzetbe
+//grey háttèr bejelentkezés
 
 import { useRef, useState } from "react";
 import "./App.css";
