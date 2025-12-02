@@ -8,7 +8,10 @@
 //lehessen irni ha baj van az oldallal
 //magyar zaszlora kattintani magyaritasert.
 //toltokepernyo csapó, ami számol a négyzetbe
-//grey háttèr bejelentkezés
+//blur háttèr bejelentkezés
+//csillagátlagolás mutatása.
+//sort: csillag/név alapján
+
 
 import { useRef, useState } from "react";
 import "./App.css";
